@@ -1,2 +1,1 @@
-# webpack-share
-webpack share
+# sharing
