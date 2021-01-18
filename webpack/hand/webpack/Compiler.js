@@ -30,11 +30,13 @@ class Compiler extends Tabable {
       // 编译 hook 
       compile: new SyncHook(['params']),
       // 实例化 Compilation 的 hook
-      thisCompilation: new SyncHook(['compilation','params']),
+      thisCompilation: new SyncHook(['compilation', 'params']),
       // 实例化 Compilation 的 hook
-      compilation: new SyncHook(['compilation','params']),
+      compilation: new SyncHook(['compilation', 'params']),
       // 真正编译的hook
       make: new AsyncParalleHook(['compilation']),
+      // 编译之后 
+      afterCompile: new AsyncSeriesHook(['compilation']),
       // 编译完成
       done: new AsyncSeriesHook(['stats'])
     }
@@ -78,7 +80,11 @@ class Compiler extends Tabable {
       const compilation = new newCompilation(params)
       // 触发 make hooks
       this.hooks.make.callAsync(compliation, (err) => {
-        compiledCallback(err, compilation)
+        comliation.seal(err => {
+          this.hooks.afterCompile.callAsync(compilation, (err) => { 
+            compiledCallback(err, compilation)
+          })
+        })
       })
     })
   }
@@ -102,7 +108,7 @@ class Compiler extends Tabable {
     this.hooks.thisCompilation.call(complation, params)
     // 触发 compilation hook
     this.hooks.compilation.call(complation, params)
-
+    // 返回 compilation
     return compilation
   }
 }

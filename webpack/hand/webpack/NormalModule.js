@@ -2,14 +2,21 @@ const path = require('path');
 const types = require('babel-types');
 const generate = require('babel-generator').default;
 const traverse = require('babel-traverse').default;
-const async = require('neo-async');
+const neoAsync = require('neo-async');
 const { getContext, runLoaders } = require('loader-runner');
 const fs = require('fs');
 
 class NormalModule {
   constructor(data) {
     super();
-    const { name, context, resource, parser, rawRequest, async = false } = data;
+    const {
+      name,
+      context,
+      resource,
+      parser,
+      rawRequest,
+      async = false
+    } = data;
     this.name = name;
     this._ast = null;
     this._source = '';
@@ -19,11 +26,12 @@ class NormalModule {
     this.resource = resource;
     this.rawRequest = rawRequest;
     this.moduleId = './' + path.posix.relative(context, resource);
-    this.block = [];
+    this.blocks = [];
     this.dependencies = [];
   }
 
-  build(compilation, callback) {
+  build (compilation, callback) {
+
     const getDependencyResource = (node) => {
       // 模块名称
       const moduleName = node.arguments[0].value;
@@ -50,11 +58,11 @@ class NormalModule {
       const dep = getDependencyResource(node);
       // 添加依赖
       this.dependencies.push({
-        name: this.name,
+        name: this.name, // 一个 entry 下的所有依赖模块名称都是相同的
         context: this.context,
-        rawRequest: dep.moduleName, // 依赖模块名称
-        moduleId: dep.dependencyModuleId, // 依赖模块绝对路径
-        resource: dep.dependencyResource // 依赖模块相对路径（模块ID）
+        rawRequest: dep.moduleName, // 依赖模块名称（原始路径）
+        moduleId: dep.dependencyModuleId, // 依赖模块 相对路径（模块ID）
+        resource: dep.dependencyResource  // 依赖模块 绝对路径
       });
       return dep;
     };
@@ -64,17 +72,19 @@ class NormalModule {
       const dep = getDependencyResource(node);
       // 添加 chunk 模块
       this.blocks.push({
+        async: true,
+        name: chunkName, // chunk的模块名称
         context: this.context,
-        entry: dep.dependencyModuleId,
-        name: chunkName,
-        async: true
+        rawRequest: dep.moduleName,
+        entry: dep.dependencyModuleId, // chunk入口
+        moduleId: dep.dependencyModuleId, // 依赖模块 相对路径（模块ID）
+        resource: dep.dependencyResource // 依赖模块 绝对路径
       });
       return dep;
     };
 
     const CallExpressionFn = (nodePath) => {
       const node = nodePath.node;
-
       if (node.callee.name === 'require') {
         // 收集模块依赖
         const { dependencyModuleId } = pushDependencies(node);
@@ -113,8 +123,9 @@ class NormalModule {
       this._source = code;
       // 更新ast
       this._ast = ast;
+
       // 循环模块依赖的 chunk ，开始 build chunk
-      async.forEach(
+      neoAsync.forEach(
         this.blocks,
         (block, done) => {
           const { context, entry, name, async } = block;
@@ -136,13 +147,19 @@ class NormalModule {
     });
   }
 
-  doBuild(compilation, callback) {
+  doBuild (compilation, callback) {
     this.getSoruce(this.resource, compilation, (err, source) => {
       callback(err, source);
     });
   }
 
-  getSoruce(resource, compilation, callback) {
+  /**
+   * 通过 loaderRuner 读取资源
+   * @param {*} resource 
+   * @param {*} compilation 
+   * @param {*} callback 
+   */
+  getSoruce (resource, compilation, callback) {
     const {
       module: { rules = [] }
     } = compilation.options;
