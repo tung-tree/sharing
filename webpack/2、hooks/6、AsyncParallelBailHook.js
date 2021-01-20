@@ -37,7 +37,7 @@ parallelBail.tapAsync('wangwu', (age, cb) => {
   }, 2000);
 });
 
-parallelBail.callAsync(28, (result) => {
+parallelBail.callAsync(28, (err , result) => {
   console.log(result);
   console.timeEnd('test');
 });

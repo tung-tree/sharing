@@ -1,9 +1,11 @@
 /**
  *
- * 异步并行 hook 
- * 
+ * 异步并行 hook
+ *
  *  其实就是 promise.all . 当然也支持 tap , call 这时就等同于同步
  * 
+ *  异步处理方式： 1、回调 ，2、promise ，3、async/await
+ *
  *
  */
 
@@ -27,7 +29,7 @@ paralle.tapAsync('lisi', (age, cb) => {
   }, 2000);
 });
 
-paralle.callAsync(28, () => {
+paralle.callAsync(28, (err, res) => {
   // 最终的回调
   console.timeEnd('test');
 });

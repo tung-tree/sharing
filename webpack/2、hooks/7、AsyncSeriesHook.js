@@ -13,19 +13,19 @@ const series = new AsyncSeriesHook(['age']);
 
 console.time('time');
 
-series.tapAsync('1', (err, cb) => {
+series.tapAsync('1', (age, cb) => {
   setTimeout(cb, 1000);
 });
 
-series.tapAsync('2', (err, cb) => {
+series.tapAsync('2', (age, cb) => {
   setTimeout(cb, 1000);
 });
 
-series.tapAsync('3', (err, cb) => {
+series.tapAsync('3', (age, cb) => {
   setTimeout(cb, 1000);
 });
 
-series.callAsync(30, () => {
+series.callAsync(30, (err, age) => {
   console.timeEnd('time');
 });
 
@@ -64,7 +64,6 @@ series.callAsync(30, () => {
 //     _next0();
 //   }
 // });
-
 
 class My {
   constructor() {
