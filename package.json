@@ -25,7 +25,10 @@
     "@babel/generator": "^7.12.11",
     "@babel/types": "^7.12.12",
     "babylon": "^6.18.0",
+    "less": "^4.1.0",
+    "loader-runner": "^4.2.0",
     "neo-async": "^2.6.2",
+    "sass": "^1.32.5",
     "tapable": "^2.2.0"
   }
 }
