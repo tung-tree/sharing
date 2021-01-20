@@ -1,18 +1,14 @@
-
 const fs = require('fs');
 const path = require('path');
 const { runLoaders } = require('loader-runner');
-const resolve = (filename) => path.resolve(__dirname, filename);
+const join = (filename) => path.join(__dirname, filename);
 runLoaders(
   {
-    resource: resolve('./loader/reset.less'),
-    loaders: [
-      resolve('./loader/style-loader'),
-      resolve('./loader/less-loader')
-    ],
+    resource: join('./loader/reset.less'),
+    loaders: [join('./loader/style-loader'), join('./loader/less-loader')],
     context: {}
   },
   (err, { result }) => {
-    fs.writeFileSync(resolve(__dirname, './loader/index.js'), result[0], 'utf-8');
+    fs.writeFileSync(join('./loader/index.js'), result[0], 'utf-8');
   }
 );
