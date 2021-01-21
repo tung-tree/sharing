@@ -21,4 +21,4 @@ loader.pitch = function () {
 };
 
 // 表示返回 字符串 ， 否则是 Buffer 流
-loader.raw = true
+loader.raw = false
