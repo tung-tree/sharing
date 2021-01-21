@@ -1,22 +1,14 @@
 const path = require('path');
-const types = require('babel-types');
-const generate = require('babel-generator').default;
-const traverse = require('babel-traverse').default;
+const traverse = require('@babel/traverse').default;
+const types = require('@babel/types');
+const generate = require('@babel/generator').default;
 const neoAsync = require('neo-async');
-const { getContext, runLoaders } = require('loader-runner');
+const { runLoaders } = require('loader-runner');
 const fs = require('fs');
 
 class NormalModule {
   constructor(data) {
-    super();
-    const {
-      name,
-      context,
-      resource,
-      parser,
-      rawRequest,
-      async = false
-    } = data;
+    const { name, context, resource, parser, rawRequest, async = false } = data;
     this.name = name;
     this._ast = null;
     this._source = '';
@@ -30,8 +22,7 @@ class NormalModule {
     this.dependencies = [];
   }
 
-  build (compilation, callback) {
-
+  build(compilation, callback) {
     const getDependencyResource = (node) => {
       // 模块名称
       const moduleName = node.arguments[0].value;
@@ -60,9 +51,10 @@ class NormalModule {
       this.dependencies.push({
         name: this.name, // 一个 entry 下的所有依赖模块名称都是相同的
         context: this.context,
+        parser: this.parser,
         rawRequest: dep.moduleName, // 依赖模块名称（原始路径）
         moduleId: dep.dependencyModuleId, // 依赖模块 相对路径（模块ID）
-        resource: dep.dependencyResource  // 依赖模块 绝对路径
+        resource: dep.dependencyResource // 依赖模块 绝对路径
       });
       return dep;
     };
@@ -73,6 +65,7 @@ class NormalModule {
       // 添加 chunk 模块
       this.blocks.push({
         async: true,
+        parser: this.parser,
         name: chunkName, // chunk的模块名称
         context: this.context,
         rawRequest: dep.moduleName,
@@ -92,7 +85,7 @@ class NormalModule {
         node.callee.name = '__webpack_require__';
         // 修改 node 的 arguments
         node.arguments = [types.stringLiteral(dependencyModuleId)];
-      } else if (types.isImport(node.callee)) {
+      } else if (types.isImport(nodePath.node.callee)) {
         // 默认的代码块ID
         let chunkName = compilation.asyncChunkCounter++;
         // /* webpackChunkName : "chunkName" */
@@ -116,22 +109,27 @@ class NormalModule {
       // 获取源代码的 ast
       this._ast = this.parser.parser(source);
       // 遍历 ast
-      const ast = traverse(this._ast, { CallExpression: CallExpressionFn });
+      traverse(this._ast, { CallExpression: CallExpressionFn });
       // 通过最新的 ast 生成最新的源代码
-      const { code } = generate(ast);
+      const { code } = generate(this._ast);
       // 更新源代码
       this._source = code;
-      // 更新ast
-      this._ast = ast;
-
       // 循环模块依赖的 chunk ，开始 build chunk
       neoAsync.forEach(
         this.blocks,
         (block, done) => {
-          const { context, entry, name, async } = block;
-          compilation._addModuleChain(context, entry, name, async, done);
+          compilation._addModuleChain(
+            block,
+            (module) => {
+              compilation.entries.push(module);
+            },
+            done
+          );
         },
-        callback // 所有依赖 build 完最终的回调
+        (err) => {
+          // 所有依赖 build 完最终的回调
+          callback();
+        }
       );
 
       // let blocksLen = this.blocks.length;
@@ -147,7 +145,7 @@ class NormalModule {
     });
   }
 
-  doBuild (compilation, callback) {
+  doBuild(compilation, callback) {
     this.getSoruce(this.resource, compilation, (err, source) => {
       callback(err, source);
     });
@@ -155,36 +153,37 @@ class NormalModule {
 
   /**
    * 通过 loaderRuner 读取资源
-   * @param {*} resource 
-   * @param {*} compilation 
-   * @param {*} callback 
+   * @param {*} resource
+   * @param {*} compilation
+   * @param {*} callback
    */
-  getSoruce (resource, compilation, callback) {
+  getSoruce(resource, compilation, callback) {
     const {
       module: { rules = [] }
     } = compilation.options;
 
-    const loaders = [];
+    let loaders = [];
 
     for (let i = 0; i < rules.length; i++) {
       if (rules[i].test.test(resource)) {
-        loaders = [...loaders, ...rules.use];
+        loaders = [...loaders, ...rules[i].use];
       }
     }
 
-    loaders.map((loader) =>
-      require.resolve(path.posix.join(this.context, 'loader', loader))
+    loaders = loaders.map((loader) =>
+      require.resolve(
+        path.posix.join(this.context, '5、hand/webpack/loader', loader)
+      )
     );
-
     runLoaders(
       {
         loaders,
         context: {},
-        readResource: fs,
-        resource: this.resource
+        resource: this.resource,
+        readResource: fs.readFile.bind(fs)
       },
-      (err, result) => {
-        callback(err, result);
+      (err, { result }) => {
+        callback(err, result[0]);
       }
     );
   }

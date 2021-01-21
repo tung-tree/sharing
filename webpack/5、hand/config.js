@@ -1,5 +1,7 @@
+const path = require('path')
+
 module.exports = {
-  context: process.cwd(),
+  context: '/Users/yanpingli/learn/sharing/webpack/',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, './dist'),
@@ -8,8 +10,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /.sass$/,
-        use: ['style-loader', 'sass-loader']
+        test: /.js$/,
+        use: ['babel-loader']
       }
     ]
   }

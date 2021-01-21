@@ -2,9 +2,6 @@
 const EntryOptionPlugin = require('./plugin/EntryOptionPlugin')
 
 class WebpackOptionApply {
-  constructor() { 
-    
-  }
   process (options, compiler) {
     // 初始化 EntryOptionPlugin ，订阅 entryOption hook
     new EntryOptionPlugin().apply(compiler)
@@ -12,3 +9,5 @@ class WebpackOptionApply {
     compiler.hooks.entryOption.call(options.context, options.entry)
   }
 }
+
+module.exports = WebpackOptionApply

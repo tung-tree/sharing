@@ -11,7 +11,7 @@
             "skipFiles": [
                //  "<node_internals>/**"
             ],
-            "program": "/Users/yanpingli/learn/sharing/webpack/4、ast/1、index.js"
+            "program": "/Users/yanpingli/learn/sharing/webpack/5、hand/index.js"
         }
     ]
 }

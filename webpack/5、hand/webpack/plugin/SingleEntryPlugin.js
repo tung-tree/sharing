@@ -7,6 +7,7 @@ class SingleEntryPlugin {
     this.context = context
   }
   apply (compiler) {
+    
     /**
      * 订阅 compiler.hooks.make 事件
      * 这个事件非常非常重要，是webpack打包的真正起点
@@ -19,3 +20,5 @@ class SingleEntryPlugin {
     })
   }
 }
+
+module.exports = SingleEntryPlugin

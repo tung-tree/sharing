@@ -4,7 +4,7 @@ class Chunk {
     this.files = []
     this.modules = []
     this.name = chunk.name
-    this.entryModlue = chunk
+    this.entryModule = chunk
     this.async = chunk.async
   }
 }

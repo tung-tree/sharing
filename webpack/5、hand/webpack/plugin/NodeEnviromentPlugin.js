@@ -1,5 +1,5 @@
 
-const fs = requrie('fs')
+const fs = require('fs')
 
 class NodeEnvirmentPlugin {
   constructor() { }
