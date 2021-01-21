@@ -1,9 +1,6 @@
 const {
   Tapable,
   SyncHook,
-  SyncBailHook,
-  SyncWaterfallHook,
-  AsyncSeriesHook
 } = require('Tapable');
 
 const Parser = require('./Parser');
@@ -15,6 +12,9 @@ const neoAsync = require('neo-async');
 const NormalModuleFactory = require('./NormalModuleFactory');
 const Chunk = require('./Chunk');
 
+/**
+ * main 模板
+ */
 const mainTemplate = fs.readFileSync(
   path.join(__dirname, 'template', 'main.ejs'),
   'utf8'
@@ -22,6 +22,9 @@ const mainTemplate = fs.readFileSync(
 
 const mainRender = ejs.compile(mainTemplate);
 
+/**
+ * chunck 模板
+ */
 const chunkTemplate = fs.readFileSync(
   path.join(__dirname, 'template', 'chunk.ejs'),
   'utf8'
@@ -54,13 +57,15 @@ class Compilation extends Tapable {
   }
 
   /**
-   * 模块入口
+   * main 模块入口
    * @param {*} context 当前的目录
    * @param {*} entry 模块入口
    * @param {*} name  模块名称
    * @param {*} callback 模块编译完成的最终回调
    */
   addEntry(context, entry, name, completeCallback) {
+    
+    // 触发 add entry hook
     this.hooks.addEntry.call(entry, name);
 
     const entryCallback = (module) => {

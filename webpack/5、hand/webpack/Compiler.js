@@ -2,10 +2,8 @@ const {
   Tapable,
   SyncHook,
   SyncBailHook,
-  SyncWaterfallHook,
   AsyncParallelHook,
   AsyncSeriesHook,
-  AsyncSeriesBailHook
 } = require('tapable');
 
 const Stats = require('./Stats');
@@ -45,30 +43,37 @@ class Compiler extends Tapable {
     };
   }
 
+  /**
+   * 输出资源
+   * @param {*} compilation 
+   * @param {*} callback 
+   */
   emitAssets(compilation, callback) {
-    const emitFiles = (err) => {
-      const assets = compilation.assets;
-      let outputPath = this.options.output.path; //dist
-      for (let file in assets) {
-        let source = assets[file]; //得到文件名和文件内容
-        let targetPath = path.posix.join(outputPath, file); //得到输出的路径 targetPath
-        this.outputFileSystem.writeFileSync(targetPath, source, 'utf8'); //NodeEnvironmentPlugin
-      }
-      callback();
-    };
     this.hooks.emit.callAsync(compilation, (err) => {
-      try {
-        console.log(this.options.output.path)
-        mkdirp(this.options.output.path).then(emitFiles);
-      } catch (error) {
-        console.log(error);
-      }
+      if (err) return callback(err);
+      
+      mkdirp(this.options.output.path).then(
+        (res) => {
+          for (let file in compilation.assets) {
+            // 得到文件名和文件内容
+            const source = compilation.assets[file];
+            // 得到输出的路径 targetPath
+            const targetPath = path.posix.join(this.options.output.path, file);
+            // 输出资源
+            this.outputFileSystem.writeFileSync(targetPath, source, 'utf8'); 
+          }
+          callback();
+        },
+        (err) => {
+          callback(err);
+        }
+      );
     });
   }
+
   /**
    * webpack run 方法
-   *
-   * @param {*} callback run done callback
+   * @param {*} finalCallback 最终的回调
    */
   run(finalCallback) {
     /**
@@ -78,19 +83,31 @@ class Compiler extends Tapable {
      */
 
     const onCompiled = (err, compilation) => {
+      if (err) return finalCallback(err);
+
       this.emitAssets(compilation, (err) => {
-        let stats = new Stats(compilation); //stats是一 个用来描述打包后结果的对象
+        if (err) return finalCallback(err);
+
+        //stats是一 个用来描述打包后结果的对象
+        const stats = new Stats(compilation);
+
         this.hooks.done.callAsync(stats, (err) => {
+          if (err) return finalCallback(err);
+
           //done表示整个流程结束了
-          finalCallback(err, stats);
+          finalCallback(null, stats);
         });
       });
     };
 
     // 触发订阅的 beforeRun hook
     this.hooks.beforeRun.callAsync(this, (err) => {
+      if (err) return finalCallback(err);
+
       // 触发订阅的 run hook
       this.hooks.run.callAsync(this, (err) => {
+        if (err) return finalCallback(err);
+
         this.compile(onCompiled);
       });
     });
@@ -99,19 +116,31 @@ class Compiler extends Tapable {
   compile(compiledCallback) {
     // 初始化 Compilation 实例化需要的参数
     const params = this.newCompilationParams();
+
     // 触发 beforeCompile hook
     this.hooks.beforeCompile.callAsync(params, (err) => {
+      if (err) return compiledCallback(err);
+
       // 触发 compile hook
       this.hooks.compile.call(params);
+
       // 实例化 Compilation 对象
       // 此对象就是贯穿着一次编译的生命周期
       // 里面保存了一次编译的所有资源信息
       const compilation = this.newCompilation(params);
+
       // 触发 make hooks
       this.hooks.make.callAsync(compilation, (err) => {
+        if (err) return compiledCallback(err);
+
+        // 触发 封装 hooks
         compilation.seal((err) => {
+          if (err) return compiledCallback(err);
+
           this.hooks.afterCompile.callAsync(compilation, (err) => {
-            compiledCallback(err, compilation);
+            if (err) return compiledCallback(err);
+
+            compiledCallback(null, compilation);
           });
         });
       });
