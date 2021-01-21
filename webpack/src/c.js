@@ -1,2 +1,2 @@
 
-module.exports = 123
+const d = require('./d')
