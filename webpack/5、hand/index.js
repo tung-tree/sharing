@@ -9,11 +9,9 @@ compiler.run((err, stats) => {
     console.log(err);
   } else {
     console.log('构建完毕');
-    console.log(
-      stats.toJson()
-    );
+    // console.log(
+    //   stats.toJson()
+    // );
   }
 });
-
-
 

@@ -7,6 +7,7 @@ function loader(source) {
     source,
     {
       // presets: ['@babel/preset-env']
+      plugins: ['@babel/plugin-transform-modules-commonjs']
     },
     function (err, { code, ast, map }) {
       cb(err, code, ast, map);

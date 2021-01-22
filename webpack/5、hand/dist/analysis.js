@@ -50,6 +50,7 @@
 
     var installedModules = {};
 
+    // 已经安装的chunk, 默认是 mian 入口
     var installedChunks = {
       main: 0
     };
@@ -177,7 +178,7 @@
           document.head.appendChild(script);
         }
       }
-      
+
       return Promise.all(promises);
     };
   
