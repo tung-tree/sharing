@@ -1,7 +1,4 @@
-const {
-  Tapable,
-  SyncHook,
-} = require('Tapable');
+const { Tapable, SyncHook } = require('Tapable');
 
 const Parser = require('./Parser');
 const parser = new Parser();
@@ -29,6 +26,7 @@ const chunkTemplate = fs.readFileSync(
   path.join(__dirname, 'template', 'chunk.ejs'),
   'utf8'
 );
+
 const chunkRender = ejs.compile(chunkTemplate);
 
 class Compilation extends Tapable {
@@ -46,12 +44,21 @@ class Compilation extends Tapable {
     this.files = []; //生成的文件
     this.assets = {}; //资源
     this.hooks = {
+      // entry hook
       addEntry: new SyncHook(['entry', 'name']),
+      // fail hook
       failedEntry: new SyncHook(['entry', 'name', 'error']),
+      // success hook
       succeedEntry: new SyncHook(['entry', 'name', 'module']),
+      // 封装 hook
       seal: new SyncHook(),
-      succeedModule: new SyncHook(),
+      // 成功hook
+      succeedModule: new SyncHook(['module']),
+      // 失败hook
+      failModule: new SyncHook(['error']),
+      // 生成 chunk 前 hook
       beforeChunks: new SyncHook(),
+      // 生成 chunk 后 hook
       afterChunks: new SyncHook(['chunks'])
     };
   }
@@ -61,36 +68,34 @@ class Compilation extends Tapable {
    * @param {*} context 当前的目录
    * @param {*} entry 模块入口
    * @param {*} name  模块名称
-   * @param {*} callback 模块编译完成的最终回调
+   * @param {*} completeCallback 模块编译完成的最终回调
    */
   addEntry(context, entry, name, completeCallback) {
-    
     // 触发 add entry hook
     this.hooks.addEntry.call(entry, name);
-
-    const entryCallback = (module) => {
-      this.entries.push(module);
-    };
 
     const buildCompleteCallback = (err, module) => {
       if (err) {
         this.hooks.failedEntry.call(entry, name, err);
-        completeCallback(err);
       } else {
         this.hooks.succeedEntry.call(entry, name, module);
-        completeCallback(null, module);
       }
+      completeCallback(err);
     };
 
-    const data = {
-      name,
-      parser,
-      context,
-      rawReqeust: entry,
-      resource: path.posix.join(context, entry)
-    };
-
-    this._addModuleChain(data, entryCallback, buildCompleteCallback);
+    this._addModuleChain(
+      {
+        name, // 模块名称 'main'
+        parser, // ast 解释器
+        context, // 解析的目录
+        rawReqeust: entry, // 入口资源 path
+        resource: path.posix.join(context, entry) // 入口资源 绝对 路径
+      },
+      (module) => {
+        this.entries.push(module); // 入口模块放入 entries
+      },
+      buildCompleteCallback // 解析成功回调
+    );
   }
 
   /**
@@ -114,12 +119,16 @@ class Compilation extends Tapable {
 
     // 模块解析完之后调用
     const afterBuild = (err) => {
+      if (err) return buildCompleteCallback(err);
       // 如果模块有依赖
       if (module.dependencies && module.dependencies.length > 0) {
+        // 继续分析依赖
         this.processModuleDependencies(module, (err) => {
+          // 分析依赖完毕，再调完毕回调
           buildCompleteCallback(err, module);
         });
       } else {
+        // 分析完毕回调
         buildCompleteCallback(err, module);
       }
     };
@@ -134,8 +143,13 @@ class Compilation extends Tapable {
    * @param {*} afterBuild
    */
   buildModule(module, afterBuild) {
+    // todo what ?
     module.build(this, (err) => {
-      this.hooks.succeedModule.call(module);
+      if (err) {
+        this.hooks.failModule.call(err);
+      } else {
+        this.hooks.succeedModule.call(module);
+      }
       afterBuild(err);
     });
   }
@@ -149,27 +163,29 @@ class Compilation extends Tapable {
     neoAsync.forEach(
       module.dependencies,
       (dep, done) => {
-        const { name, context, rawRequest, resource, moduleId, parser } = dep;
-        this._addModuleChain(
-          {
-            name,
-            parser,
-            context,
-            moduleId,
-            resource,
-            rawRequest
-          },
-          null,
-          done
-        );
+        /**
+         * dep 依赖的模块信息
+         * null 因为依赖不是入口，不需要加入到 entires 里面去
+         * done 模块解析完毕
+         */
+        this._addModuleChain(dep, null, done);
       },
-      callback
+      (err) => {
+        // 所有依赖分析完毕，执行回调
+        callback(err);
+      }
     );
   }
 
+  /**
+   * 封装
+   * @param {*} callback
+   */
   seal(callback) {
+    // 触发 hook
     this.hooks.seal.call();
     this.hooks.beforeChunks.call();
+    // entries 有几个 就有个 chunk
     this.entries.forEach((module) => {
       const chunk = new Chunk(module);
       chunk.modules = this.modules.filter(
@@ -177,33 +193,44 @@ class Compilation extends Tapable {
       );
       this.chunks.push(chunk);
     });
+    // 触发 afterChunks
     this.hooks.afterChunks.call(this.chunks);
+    // 创建 chunk 资源
     this.createChunkAssets();
-    callback(null);
+    // 完毕回调
+    callback();
   }
 
+  /**
+   * 创建 chunk 资源
+   */
   createChunkAssets() {
     for (let i = 0; i < this.chunks.length; i++) {
       const chunk = this.chunks[i];
       chunk.files = [];
       const file = chunk.name + '.js';
       chunk.files.push(file);
+
       let source = '';
+
       if (chunk.async) {
+        // chunk 入口模板
         source = chunkRender({
           chunkName: chunk.entryModule.name,
           modules: chunk.modules
         });
       } else {
+        // 主入口模板
         source = mainRender({
           entryModuleId: chunk.entryModule.moduleId,
           modules: chunk.modules
         });
       }
+      // 把生成的资源放入 assets
       this.emitAsset(file, source);
     }
   }
-
+  
   emitAsset(file, source) {
     this.assets[file] = source;
     this.files.push(file);

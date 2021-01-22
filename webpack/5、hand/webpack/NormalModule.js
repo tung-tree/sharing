@@ -22,7 +22,14 @@ class NormalModule {
     this.dependencies = [];
   }
 
+  /**
+   * 模块分析入口
+   * @param {
+   * } compilation
+   * @param {*} callback
+   */
   build(compilation, callback) {
+    // 拿到模块依赖
     const getDependencyResource = (node) => {
       // 模块名称
       const moduleName = node.arguments[0].value;
@@ -44,6 +51,7 @@ class NormalModule {
       return { moduleName, dependencyResource, dependencyModuleId };
     };
 
+    // 把同步依赖保存到 dependencies 上
     const pushDependencies = (node) => {
       // 获取依赖信息
       const dep = getDependencyResource(node);
@@ -59,12 +67,16 @@ class NormalModule {
       return dep;
     };
 
+    // 保存异步依赖到 blocks ，
+    // 注意每个异步依赖都是一个 chunk
+    // 要保存到 entries 上去
     const pushBlocks = (node, chunkName) => {
       // 获取依赖信息
       const dep = getDependencyResource(node);
+
       // 添加 chunk 模块
       this.blocks.push({
-        async: true,
+        async: true, // 标明是异步 chunk
         parser: this.parser,
         name: chunkName, // chunk的模块名称
         context: this.context,
@@ -76,8 +88,10 @@ class NormalModule {
       return dep;
     };
 
+    // traverse CallExpression
     const CallExpressionFn = (nodePath) => {
       const node = nodePath.node;
+
       if (node.callee.name === 'require') {
         // 收集模块依赖
         const { dependencyModuleId } = pushDependencies(node);
@@ -86,6 +100,7 @@ class NormalModule {
         // 修改 node 的 arguments
         node.arguments = [types.stringLiteral(dependencyModuleId)];
       } else if (types.isImport(nodePath.node.callee)) {
+        // import(/* webpackChunkName ： "test"*/ './src/test.js')
         // 默认的代码块ID
         let chunkName = compilation.asyncChunkCounter++;
         // /* webpackChunkName : "chunkName" */
@@ -97,14 +112,17 @@ class NormalModule {
           chunkName = comments.match(regexp)[1];
         }
         const { dependencyModuleId } = pushBlocks(node, chunkName);
-        // 替换 import
+        // 替换 import(...)
         nodePath.replaceWithSourceString(
           `__webpack_require__.e("${chunkName}").then(__webpack_require__.t.bind(null,"${dependencyModuleId}", 7))`
         );
       }
     };
 
+    // 开始build资源
     this.doBuild(compilation, (err, source) => {
+      if (err) return callback(err);
+      // 资源内容
       this._source = source;
       // 获取源代码的 ast
       this._ast = this.parser.parser(source);
@@ -120,15 +138,13 @@ class NormalModule {
         (block, done) => {
           compilation._addModuleChain(
             block,
-            (module) => {
-              compilation.entries.push(module);
-            },
+            (module) => compilation.entries.push(module),
             done
           );
         },
         (err) => {
           // 所有依赖 build 完最终的回调
-          callback();
+          callback(err);
         }
       );
 
@@ -145,7 +161,15 @@ class NormalModule {
     });
   }
 
+  /**
+   * 获取build资源
+   * @param {*} compilation
+   * @param {*} callback
+   */
   doBuild(compilation, callback) {
+    /**
+     * resource 资源的绝对路径
+     */
     this.getSoruce(this.resource, compilation, (err, source) => {
       callback(err, source);
     });
@@ -158,28 +182,32 @@ class NormalModule {
    * @param {*} callback
    */
   getSoruce(resource, compilation, callback) {
+    // 拿到 config.js 配置忘记的 rulues
     const {
       module: { rules = [] }
     } = compilation.options;
 
     let loaders = [];
 
+    // 遍历 rules 拿到所有的 配置的 loader
     for (let i = 0; i < rules.length; i++) {
       if (rules[i].test.test(resource)) {
         loaders = [...loaders, ...rules[i].use];
       }
     }
 
+    // 标准化loader
     loaders = loaders.map((loader) =>
       require.resolve(
         path.posix.join(this.context, '5、hand/webpack/loader', loader)
       )
     );
+
     runLoaders(
       {
-        loaders,
-        context: {},
-        resource: this.resource,
+        loaders, // 所有的loader
+        context: {}, // 可以传自定义的参数，后续loader中可以使用
+        resource: this.resource, // 资源绝对路径
         readResource: fs.readFile.bind(fs)
       },
       (err, { result }) => {

@@ -131,6 +131,7 @@ class Compiler extends Tapable {
 
       // 触发 make hooks
       this.hooks.make.callAsync(compilation, (err) => {
+
         if (err) return compiledCallback(err);
 
         // 触发 封装 hooks
