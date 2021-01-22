@@ -222,6 +222,7 @@ class Compilation extends Tapable {
       } else {
         // 主入口模板
         source = mainRender({
+          chunks: this.chunks.filter(chunk => chunk.async === true),
           entryModuleId: chunk.entryModule.moduleId,
           modules: chunk.modules
         });

@@ -25,7 +25,7 @@
     "main": 0
   };
   function jsonpScriptSrc(chunkId) {
-    return __webpack_require__.p + "" + ({ "sum": "sum", "title": "title" }[chunkId] || chunkId) + ".js"
+    return __webpack_require__.p + "" + ({<% for(let chunk of chunks){ %>"<%-chunk.entryModule.name%>":"<%-chunk.entryModule.name%>"<%}%>}[chunkId] || chunkId) + ".js"
   }
   function __webpack_require__(moduleId) {
     if (installedModules[moduleId]) {
