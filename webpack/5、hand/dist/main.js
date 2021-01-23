@@ -2,16 +2,10 @@
   function webpackJsonpCallback(data) {
     var chunkIds = data[0];
     var moreModules = data[1];
-    var moduleId,
-      chunkId,
-      i = 0,
-      resolves = [];
+    var moduleId, chunkId, i = 0, resolves = [];
     for (; i < chunkIds.length; i++) {
       chunkId = chunkIds[i];
-      if (
-        Object.prototype.hasOwnProperty.call(installedChunks, chunkId) &&
-        installedChunks[chunkId]
-      ) {
+      if (Object.prototype.hasOwnProperty.call(installedChunks, chunkId) && installedChunks[chunkId]) {
         resolves.push(installedChunks[chunkId][0]);
       }
       installedChunks[chunkId] = 0;
@@ -25,34 +19,24 @@
     while (resolves.length) {
       resolves.shift()();
     }
-  }
+  };
   var installedModules = {};
   var installedChunks = {
-    main: 0
+    "main": 0
   };
   function jsonpScriptSrc(chunkId) {
-    return (
-      __webpack_require__.p +
-      '' +
-      ({ async: 'async' }[chunkId] || chunkId) +
-      '.js'
-    );
+    return __webpack_require__.p + "" + ({"async":"async"}[chunkId] || chunkId) + ".js"
   }
   function __webpack_require__(moduleId) {
     if (installedModules[moduleId]) {
       return installedModules[moduleId].exports;
     }
-    var module = (installedModules[moduleId] = {
+    var module = installedModules[moduleId] = {
       i: moduleId,
       l: false,
       exports: {}
-    });
-    modules[moduleId].call(
-      module.exports,
-      module,
-      module.exports,
-      __webpack_require__
-    );
+    };
+    modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
     module.l = true;
     return module.exports;
   }
@@ -66,13 +50,13 @@
         var promise = new Promise(function (resolve, reject) {
           installedChunkData = installedChunks[chunkId] = [resolve, reject];
         });
-        promises.push((installedChunkData[2] = promise));
+        promises.push(installedChunkData[2] = promise);
         var script = document.createElement('script');
         var onScriptComplete;
         script.charset = 'utf-8';
         script.timeout = 120;
         if (__webpack_require__.nc) {
-          script.setAttribute('nonce', __webpack_require__.nc);
+          script.setAttribute("nonce", __webpack_require__.nc);
         }
         script.src = jsonpScriptSrc(chunkId);
         var error = new Error();
@@ -82,17 +66,9 @@
           var chunk = installedChunks[chunkId];
           if (chunk !== 0) {
             if (chunk) {
-              var errorType =
-                event && (event.type === 'load' ? 'missing' : event.type);
+              var errorType = event && (event.type === 'load' ? 'missing' : event.type);
               var realSrc = event && event.target && event.target.src;
-              error.message =
-                'Loading chunk ' +
-                chunkId +
-                ' failed.\n(' +
-                errorType +
-                ': ' +
-                realSrc +
-                ')';
+              error.message = 'Loading chunk ' + chunkId + ' failed.\n(' + errorType + ': ' + realSrc + ')';
               error.name = 'ChunkLoadError';
               error.type = errorType;
               error.request = realSrc;
@@ -126,94 +102,78 @@
   __webpack_require__.t = function (value, mode) {
     if (mode & 1) value = __webpack_require__(value);
     if (mode & 8) return value;
-    if (mode & 4 && typeof value === 'object' && value && value.__esModule)
-      return value;
+    if ((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
     var ns = Object.create(null);
     __webpack_require__.r(ns);
     Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-    if (mode & 2 && typeof value != 'string')
-      for (var key in value)
-        __webpack_require__.d(
-          ns,
-          key,
-          function (key) {
-            return value[key];
-          }.bind(null, key)
-        );
+    if (mode & 2 && typeof value != 'string') for (var key in value) __webpack_require__.d(ns, key, function (key) { return value[key]; }.bind(null, key));
     return ns;
   };
   __webpack_require__.n = function (module) {
-    var getter =
-      module && module.__esModule
-        ? function getDefault() {
-            return module['default'];
-          }
-        : function getModuleExports() {
-            return module;
-          };
+    var getter = module && module.__esModule ?
+      function getDefault() { return module['default']; } :
+      function getModuleExports() { return module; };
     __webpack_require__.d(getter, 'a', getter);
     return getter;
   };
-  __webpack_require__.o = function (object, property) {
-    return Object.prototype.hasOwnProperty.call(object, property);
-  };
-  __webpack_require__.p = '';
-  __webpack_require__.oe = function (err) {
-    console.error(err);
-    throw err;
-  };
-  var jsonpArray = (window['webpackJsonp'] = window['webpackJsonp'] || []);
+  __webpack_require__.o = function (object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+  __webpack_require__.p = "";
+  __webpack_require__.oe = function (err) { console.error(err); throw err; };
+  var jsonpArray = window["webpackJsonp"] = window["webpackJsonp"] || [];
   var oldJsonpFunction = jsonpArray.push.bind(jsonpArray);
   jsonpArray.push = webpackJsonpCallback;
   jsonpArray = jsonpArray.slice();
-  for (var i = 0; i < jsonpArray.length; i++)
-    webpackJsonpCallback(jsonpArray[i]);
+  for (var i = 0; i < jsonpArray.length; i++) webpackJsonpCallback(jsonpArray[i]);
   var parentJsonpFunction = oldJsonpFunction;
-  return __webpack_require__((__webpack_require__.s = './src/index.js'));
-})({
-  './src/index.js': function (module, exports, __webpack_require__) {
-    // import person, { hi } from './e';
-    // console.log(hi, JSON.stringify(person));
-    var a = __webpack_require__('./src/a.js');
+  return __webpack_require__(__webpack_require__.s = "./src/index.js");
+})
+  ({
+      
+          "./src/index.js":
+          (function (module, exports, __webpack_require__) {
+            // import person, { hi } from './e';
+// console.log(hi, JSON.stringify(person));
+var a = __webpack_require__("./src/a.js");
 
-    var b = __webpack_require__('./src/b.js');
+var b = __webpack_require__("./src/b.js");
 
-    __webpack_require__('./src/style.less');
+__webpack_require__("./src/style.less");
 
-    __webpack_require__
-      .e('async')
-      .then(__webpack_require__.t.bind(null, './src/c.js', 7))
-      .then(function (res) {
-        console.log(res);
-      });
-
-    var fn = function fn() {
-      console.log(0);
-    };
-
-    console.log('a function', a());
-    console.log('b function', b());
-  },
-
-  './src/a.js': function (module, exports, __webpack_require__) {
-    var a = function a() {
-      console.log('a');
-    };
-
-    module.exports = a;
-  },
-
-  './src/b.js': function (module, exports, __webpack_require__) {
-    var b = function b() {
-      console.log('b');
-    };
-
-    module.exports = b;
-  },
-
-  './src/style.less': function (module, exports, __webpack_require__) {
-    let style = document.createElement('style');
-    style.innerHTML = 'html body {\n  background-color: red;\n}\n';
-    document.head.appendChild(style);
-  }
+__webpack_require__.e("async").then(__webpack_require__.t.bind(null, "./src/c.js", 7)).then(function (res) {
+  console.log(res);
 });
+
+var fn = function fn() {
+  console.log(0);
+};
+
+console.log('a function', a());
+console.log('b function', b());
+          }),
+      
+          "./src/a.js":
+          (function (module, exports, __webpack_require__) {
+            var a = function a() {
+  console.log('a');
+};
+
+module.exports = a;
+          }),
+      
+          "./src/b.js":
+          (function (module, exports, __webpack_require__) {
+            var b = function b() {
+  console.log('b');
+};
+
+module.exports = b;
+          }),
+      
+          "./src/style.less":
+          (function (module, exports, __webpack_require__) {
+            let style = document.createElement('style');
+style.innerHTML = "html body {\n  background-color: red;\n}\n";
+document.head.appendChild(style);
+          }),
+       
+  });
