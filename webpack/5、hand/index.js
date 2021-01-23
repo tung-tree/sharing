@@ -1,6 +1,6 @@
 const config = require('./config.js');
-
 const webpack = require('./webpack/index.js');
+// const webpack = require('webpack');
 
 const compiler = webpack(config);
 

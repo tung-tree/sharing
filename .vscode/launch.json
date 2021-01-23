@@ -11,7 +11,7 @@
             "skipFiles": [
                //  "<node_internals>/**"
             ],
-            "program": "/Users/yanpingli/learn/sharing/webpack/5、hand/index.js"
+            "program": "/Users/yanpingli/learn/sharing/webpack/2、hooks/0、index_tapable_2"
         }
     ]
 }

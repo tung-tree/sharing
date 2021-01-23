@@ -1,7 +1,10 @@
 (function (modules) {
+
   function webpackJsonpCallback(data) {
+    
     var chunkIds = data[0];
     var moreModules = data[1];
+
     var moduleId,
       chunkId,
       i = 0,
@@ -16,28 +19,35 @@
       }
       installedChunks[chunkId] = 0;
     }
+
     for (moduleId in moreModules) {
       if (Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
         modules[moduleId] = moreModules[moduleId];
       }
     }
+
     if (parentJsonpFunction) parentJsonpFunction(data);
+
     while (resolves.length) {
       resolves.shift()();
     }
   }
+
   var installedModules = {};
+
   var installedChunks = {
     main: 0
   };
+
   function jsonpScriptSrc(chunkId) {
     return (
       __webpack_require__.p +
       '' +
-      ({ async: 'async' }[chunkId] || chunkId) +
+      ({ sum: 'sum', title: 'title' }[chunkId] || chunkId) +
       '.js'
     );
   }
+
   function __webpack_require__(moduleId) {
     if (installedModules[moduleId]) {
       return installedModules[moduleId].exports;
@@ -56,6 +66,7 @@
     module.l = true;
     return module.exports;
   }
+
   __webpack_require__.e = function requireEnsure(chunkId) {
     var promises = [];
     var installedChunkData = installedChunks[chunkId];
@@ -110,19 +121,24 @@
     }
     return Promise.all(promises);
   };
+
   __webpack_require__.m = modules;
+
   __webpack_require__.c = installedModules;
+
   __webpack_require__.d = function (exports, name, getter) {
     if (!__webpack_require__.o(exports, name)) {
       Object.defineProperty(exports, name, { enumerable: true, get: getter });
     }
   };
+  
   __webpack_require__.r = function (exports) {
     if (typeof Symbol !== 'undefined' && Symbol.toStringTag) {
       Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
     }
     Object.defineProperty(exports, '__esModule', { value: true });
   };
+
   __webpack_require__.t = function (value, mode) {
     if (mode & 1) value = __webpack_require__(value);
     if (mode & 8) return value;
@@ -142,6 +158,7 @@
         );
     return ns;
   };
+
   __webpack_require__.n = function (module) {
     var getter =
       module && module.__esModule
@@ -154,10 +171,13 @@
     __webpack_require__.d(getter, 'a', getter);
     return getter;
   };
+
   __webpack_require__.o = function (object, property) {
     return Object.prototype.hasOwnProperty.call(object, property);
   };
+
   __webpack_require__.p = '';
+  
   __webpack_require__.oe = function (err) {
     console.error(err);
     throw err;
@@ -172,48 +192,27 @@
   return __webpack_require__((__webpack_require__.s = './src/index.js'));
 })({
   './src/index.js': function (module, exports, __webpack_require__) {
-    // import person, { hi } from './e';
-    // console.log(hi, JSON.stringify(person));
-    var a = __webpack_require__('./src/a.js');
+    const a = __webpack_require__('./src/a.js');
 
-    var b = __webpack_require__('./src/b.js');
-
-    __webpack_require__('./src/style.less');
+    const b = __webpack_require__('./src/b.js');
 
     __webpack_require__
       .e('async')
       .then(__webpack_require__.t.bind(null, './src/c.js', 7))
-      .then(function (res) {
+      .then((res) => {
         console.log(res);
       });
-
-    var fn = function fn() {
-      console.log(0);
-    };
-
-    console.log('a function', a());
-    console.log('b function', b());
   },
 
   './src/a.js': function (module, exports, __webpack_require__) {
-    var a = function a() {
+    const a = () => {
       console.log('a');
     };
-
-    module.exports = a;
   },
 
   './src/b.js': function (module, exports, __webpack_require__) {
-    var b = function b() {
+    const b = () => {
       console.log('b');
     };
-
-    module.exports = b;
-  },
-
-  './src/style.less': function (module, exports, __webpack_require__) {
-    let style = document.createElement('style');
-    style.innerHTML = 'html body {\n  background-color: red;\n}\n';
-    document.head.appendChild(style);
   }
 });

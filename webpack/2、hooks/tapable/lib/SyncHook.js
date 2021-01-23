@@ -28,7 +28,9 @@ const TAP_PROMISE = () => {
 };
 
 const COMPILE = function(options) {
+	// 把所以的 handler 挂到 this.x 上
 	factory.setup(this, options);
+	// 组装 执行代码
 	return factory.create(options);
 };
 

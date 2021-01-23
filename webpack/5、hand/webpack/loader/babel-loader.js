@@ -6,8 +6,14 @@ function loader(source) {
   babel.transform(
     source,
     {
-      // presets: ['@babel/preset-env']
-      plugins: ['@babel/plugin-transform-modules-commonjs']
+      presets: ['@babel/preset-env'],
+      caller: {
+        name: 'babel-loader',
+        target: 'web',
+        supportsStaticESM: true,
+        supportsDynamicImport: true,
+        supportsTopLevelAwait: true
+      }
     },
     function (err, { code, ast, map }) {
       cb(err, code, ast, map);

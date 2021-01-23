@@ -2,15 +2,11 @@
   ['async'],
   {
     './src/c.js': function (module, exports, __webpack_require__) {
-      var d = __webpack_require__('./src/d.js');
-
-      module.exports = d;
+      const d = __webpack_require__('./src/d.js');
     },
 
     './src/d.js': function (module, exports, __webpack_require__) {
-      module.exports = function () {
-        return 'd';
-      };
+      module.exports = 'd';
     }
   }
 ]);

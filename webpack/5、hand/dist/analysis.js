@@ -224,23 +224,27 @@
     __webpack_require__.t = function (value, mode) {
   
       // & 是 按位与 运算符
+      // 加载模块
       // 7 & 1 =  0000 0111 & 0000 0001 = 0000 0001 = 1
       if (mode & 1) value = __webpack_require__(value);
+
       // 7 & 8 =  0000 0111 & 0000 1000 = 0000 0000 = 0
       if (mode & 8) return value;
+
+      // es6 模块，导出的是对象 直接返回去
       // 7 & 4 =  0000 0111 & 0000 0100 = 0000 0000 = 1
       if (mode & 4 && typeof value === 'object' && value && value.__esModule)
         return value;
   
       var ns = Object.create(null);
   
-      // 标识是 es module
+      // 标识是 es6 module
       __webpack_require__.r(ns);
   
-      // 当 加载的是一个 es6 模块时， import aa from 'aaa'
       // 组装成 es modle 导出
       Object.defineProperty(ns, 'default', { enumerable: true, value: value });
   
+       // 7 & 1 =  0000 0111 & 0000 0010 = 0000 0001 = 1
       if (mode & 2 && typeof value != 'string')
         for (var key in value)
           // 就是 用 Object.defineProperty 给 ns 定义一个 key 属性 
@@ -251,6 +255,7 @@
               return value[key];
             }.bind(null, key)
           );
+
       return ns;
     };
   

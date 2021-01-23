@@ -11,7 +11,7 @@ const deprecateContext = util.deprecate(() => {},
 
 const CALL_DELEGATE = function(...args) {
 	this.call = this._createCall("sync");
-	return this.call(...args);
+	return this.call(...args); // this.compile 方法
 };
 const CALL_ASYNC_DELEGATE = function(...args) {
 	this.callAsync = this._createCall("async");
@@ -74,6 +74,11 @@ class Hook {
 		this._insert(options);
 	}
 
+	/**
+	 * 执行tap
+	 * @param {*} options 
+	 * @param {*} fn 
+	 */
 	tap(options, fn) {
 		this._tap("sync", options, fn);
 	}
@@ -85,7 +90,11 @@ class Hook {
 	tapPromise(options, fn) {
 		this._tap("promise", options, fn);
 	}
-
+	
+	/**
+	 * 拦截器
+	 * @param {*} options 
+	 */
 	_runRegisterInterceptors(options) {
 		for (const interceptor of this.interceptors) {
 			if (interceptor.register) {
@@ -132,40 +141,69 @@ class Hook {
 		this.callAsync = this._callAsync;
 		this.promise = this._promise;
 	}
-
+	
+	/**
+	 * 
+	 * 订阅 收集 handler
+	 * 
+	 * @param {*} item 就是 options
+	 */
 	_insert(item) {
+
 		this._resetCompilation();
+
 		let before;
+		
+		// 如果有 before 先保存
+		// lisi
 		if (typeof item.before === "string") {
 			before = new Set([item.before]);
 		} else if (Array.isArray(item.before)) {
 			before = new Set(item.before);
 		}
-		let stage = 0;
+
+		let itemStage = 0;
+
 		if (typeof item.stage === "number") {
-			stage = item.stage;
+			itemStage = item.stage;
 		}
+
 		let i = this.taps.length;
+
+		// const index = this.taps.findIndex(option => option.name === item.before)
+		// this.taps.splice(index,0,item)
+		// O(n)
+		
 		while (i > 0) {
-			i--;
+			i--; 
 			const x = this.taps[i];
 			this.taps[i + 1] = x;
+
+			// stage 默认是 0
 			const xStage = x.stage || 0;
+
+			// 根据 before 排序
+			// before : new Set (['lisi'])
 			if (before) {
+				// 如果一样，删除 name
 				if (before.has(x.name)) {
 					before.delete(x.name);
 					continue;
 				}
+				// before : new Set (['lisi'])
 				if (before.size > 0) {
 					continue;
 				}
 			}
-			if (xStage > stage) {
-				continue;
+			
+			// 根据 stage 排序 , stage 默认是 0 ，越大越靠后面
+			if (xStage > itemStage) {
+			  continue; // 每 continue 一次，i 就减少1，i 越小，表示插入的位置越靠前面
 			}
 			i++;
 			break;
 		}
+
 		this.taps[i] = item;
 	}
 }

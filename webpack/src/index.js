@@ -10,5 +10,9 @@ import(/* webpackChunkName: "async" */ './c').then((res) => {
   console.log(res);
 });
 
+const fn = () => {
+  console.log(0);
+};
+
 console.log('a function' , a())
 console.log('b function', b())
