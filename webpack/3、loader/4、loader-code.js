@@ -1,6 +1,9 @@
 let index = 0;
 
+const utils = require('loader-utils')
+
 function loader(source) {
+  // const options = utils.getOptions(this)
   // const callback = this.async 异步
   // this.callback // 内部回调（同步）
   const source = source + 'new';

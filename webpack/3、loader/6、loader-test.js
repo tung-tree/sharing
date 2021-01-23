@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { runLoaders } = require('loader-runner');
-const join = (filename) => path.join(__dirname, filename);
+const resolve = (filename) => path.join(__dirname, filename);
 
 
 /**
@@ -9,7 +9,7 @@ const join = (filename) => path.join(__dirname, filename);
  * /Users/yanpingli/learn/sharing/webpack/3、loader/loader/reset.less
  * 
  */
-const resource = join('./loader/reset.less');
+const resource = resolve('./loader/reset.less');
 
 /**
  * 
@@ -19,7 +19,7 @@ const resource = join('./loader/reset.less');
  * ]
  * 
  */
-const loaders = [join('./loader/style-loader'), join('./loader/less-loader')];
+const loaders = [resolve('./loader/style-loader'), resolve('./loader/less-loader')];
 
 /**
  * 
@@ -35,6 +35,7 @@ runLoaders(
     context
   },
   (err, { result }) => {
-    fs.writeFileSync(join('./loader/index.js'), result[0], 'utf-8');
+    fs.writeFileSync(resolve('./loader/index.js'), result[0], 'utf-8');
+    console.log('执行成功')
   }
 );
